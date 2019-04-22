@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta http-equiv="X-UA-Compatible" content="ie=edge">
+        <title>Cycloid</title>
+        <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.1/css/all.css" integrity="sha384-50oBUHEmvpQ+1lW4y57PTFmhCaXp0ML5d60M1M7uH2+nqUivzIebhndOJK28anvf" crossorigin="anonymous">
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+        <link href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,600,900" rel="stylesheet">
+        <link rel='stylesheet' type = "text/css" href='/css/app.css'>
+    </head>
+    <body>
+        <h3>Edit role info below</h3>
+        <div class="container">
+
+        
+            <form action=<%="/roles/" + role._id + "/edit" %> method="POST">
+        
+                <div class="form-group">
+                    <label for="roleTitle">Position Title</label>
+                    <input class="form-control" type="text" name="roleTitle" value=<%=role.roleTitle%>>
+                </div>
+                
+                <div class="form-group">
+                    <label for="location">Location</label>
+                    <input class="form-control" type="text" name="location" value=<%=role.location%>>
+                </div>
+                
+                <div class="form-group">
+                    <label for="majorTradeArea">Major Trade Area</label>
+                    <select class="form-control" name="majorTradeArea">
+                        <%let majorTrades = ["Service", "Motive Power", "Construction","Industrial"]; %>
+                        <%majorTrades.forEach((major) => { %>
+                            <%if(major===role.majorTradeArea) {%>
+                                <option value=<%=major%> selected><%=major%></option>
+                            <%} else {%>
+                                <option value=<%=major%>><%=major%></option>
+                            <%}%>
+                            
+                            
+                        <%})%>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="tradeName">Specific Trade Name</label>
+                    <input class="form-control" type="text" name="tradeName" value=<%=role.tradeName%>>
+                </div>
+                
+                <div class="form-group">
+                    <label for="responsibilities">Responsibilities</label>
+                    <textarea class="form-control" rows="5" name="responsibilities"><%=role.responsibilities%></textarea>
+
+                </div>
+                
+                <div class="form-group">
+                    <label for="journeyperson">Journeyperson</label>
+                    <textarea class="form-control" rows="5" name="journeyperson"><%=role.journeyperson%></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label for="skillsReq">Skills Requred</label>
+                    <textarea class="form-control" rows="5" name="skillsReq"><%=role.skillsReq%></textarea>
+                
+                </div>
+                
+                <div class="form-group">
+                    <label for="trainingReq">Training Required</label>
+                    <textarea class="form-control" rows="5" name="trainingReq"><%=role.trainingReq%></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label for="trainingProvided">On-the-job Training Provided</label>
+                    <textarea class="form-control" type="textarea" name="trainingProvided"><%=role.trainingProvided%></textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label for="fulltimePay">Potential Fulltime Pay (Entry level)</label>
+                    <input class="form-control" type="text" name="fulltimePay" value=<%=role.fulltimePay%>>
+                </div>
+    
+                <button type="submit" class="btn btn-primary">Save</button>   
+            </form>
+        </div>
+    
+            <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+            <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+    </body>
+</html>

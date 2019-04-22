@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta http-equiv="X-UA-Compatible" content="ie=edge">
+        <title>Cycloid</title>
+        <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.1/css/all.css" integrity="sha384-50oBUHEmvpQ+1lW4y57PTFmhCaXp0ML5d60M1M7uH2+nqUivzIebhndOJK28anvf" crossorigin="anonymous">
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+        <link href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,600,900" rel="stylesheet">
+        <link rel='stylesheet' type = "text/css" href='/css/app.css'>
+    </head>
+    <body>
+
+        <nav class="navbar navbar-expand-lg navbar-light bg-light">
+            <div class="container">
+                <a class="navbar-brand" href="#"><i class="fas fa-circle-notch"></i>  Cycloid</a>
+            
+                <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                    <ul class="navbar-nav mr-auto">
+                        <li class="nav-item active">
+                            <a class="nav-link" href="/roles"> Roles Home <span class="sr-only">(current)</span></a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+
+
+        <%if(!roles[0]){%>
+            <%var firstCo = employer%>
+        <%} else {%>
+            <%var firstCo = roles[0].company;%>
+        <%}%>
+
+        <div class="card mb-3" style="max-width: 800px; margin: 0 auto">
+            <div class="row no-gutters">
+                <div class="col-md-4">
+                    <img src="..." class="card-img" alt="...">
+                </div>
+                <div class="col-md-8">
+                    <div class="card-body">
+                        <h5 class="card-title">Employer: <%=firstCo.company%></h5>
+                        <a class='card-text' href=<%=firstCo.website%>>Company Website</a>
+                        <p class="card-text">
+                            Size: <%=firstCo.size%>
+                        </p>
+                        <p class="card-text"></p>
+                            Type of Organization: <%=firstCo.type%>
+                        </p>
+                        <p class="card-text"></p>
+                            Founded: <%=firstCo.found%>
+                        </p>
+                        <p class="card-text">
+                            Geographic Reach: <%=firstCo.geographicReach%>
+                        </p>
+                        <p class="card-text">
+                            <small class="text-muted">
+                                This information will be automatically populated for each role 
+                            </small>
+                        </p>
+                        <a class="btn btn-primary btn-sm" href=<%="/employer/"+firstCo._id%> role="button">
+                            View/Edit Employer Information
+                        </a>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+
+    
+
+        <div class="container" style="text-align: center">
+            <h1>My Roles</h1>
+        </div>
+
+        <div class="container">
+            <div class="row">
+                <%roles.forEach((role) => {%>
+
+                <div class="col-md-3">
+                    <div class="card border-primary">
+                        <div class="card-header">
+                            <%=role.roleTitle%>
+                        </div>
+                        <div class="card-body text-primary">
+                            <h5 class="card-title"><%=role.company.company%></h5>
+                            <p class="card-text">
+                                Trade Category: <%=role.majorTradeArea%>
+                            </p>
+                            <p class="card-text">
+                                Trade: <%=role.tradeName%> 
+                            </p>
+                        </div>
+                        <a class="btn btn-primary btn-sm" role='button' href=<%="/roles/"+role._id%>>View Role</a>
+                    </div>
+                </div>
+                <%})%>
+                    
+            </div>
+        </div>
+
+        <div class="container" id="introJumbotron" style="text-align: center">
+            <a class="btn btn-primary btn-lg" role='button' href="/roles/new">Create New Role</a>
+        </div>
+
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+    </body>
+</html>

@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta http-equiv="X-UA-Compatible" content="ie=edge">
+        <title>Cycloid</title>
+        <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.1/css/all.css" integrity="sha384-50oBUHEmvpQ+1lW4y57PTFmhCaXp0ML5d60M1M7uH2+nqUivzIebhndOJK28anvf" crossorigin="anonymous">
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+        <link href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,600,900" rel="stylesheet">
+        <link rel='stylesheet' type = "text/css" href='/css/app.css'>
+    </head>
+    <body>  
+        <div class="container">
+            <h3>Edit company info below</h3>
+            <form action=<%="/employer/" + employer._id + "/edit" %> method="POST">
+        
+                <div class='form-group'>
+                    <label for="company">Company Name</label>
+                    <input type="text" class='form-control' name="company" value=<%=employer.company%>>
+                </div>
+                
+                <div class="form-group">
+                    <label for="website">Website Link</label>
+                    <input type="text" class='form-control' name="website" value=<%=employer.website%>>
+                </div>
+                
+                <div class="form-group">
+                    <label for="size">Company size (number of employees)</label>
+                    <select name="size" class='form-control' >
+                        <%let sizes = ["0-10 Employees", "10-50 Employees", "50-100 Employees","100-500 Employees", "500+ Employees"]; %>
+                        <%sizes.forEach((size) => { %>
+                            <%if(size===employer.size) {%>
+                                <option value=<%=size%> selected><%=size%></option>
+                            <%} else {%>
+                                <option value=<%=size%>><%=size%></option>
+                            <%}%>
+                        <%})%>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="type">Company type (organization)</label>
+                    <select class='form-control' name="type">
+                        <%let types = ["Family Owned", "Small Business", "Corporation"]; %>
+                        <%types.forEach((type) => { %>
+                            <%if(type===employer.type) {%>
+                                <option value=<%=type%> selected><%=type%></option>
+                            <%} else {%>
+                                <option value=<%=type%>><%=type%></option>
+                            <%}%>
+                        <%})%>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="found">Year Founded</label>
+                    <input class='form-control' type="text" name="found" value=<%=employer.found%>>
+                </div>
+
+                <div class="form-group">
+                        <label for="geographicReach">What is the geographic spread of operations?</label>
+                        <select name="geographicReach">
+                            <%let reaches = ["City", "Provincial", "Canada-wide", "North America", "Global"]; %>
+                            <%reaches.forEach((reach) => { %>
+                                <%if(reach===employer.geographicReach) {%>
+                                    <option value=<%=reach%> selected><%=reach%></option>
+                                <%} else {%>
+                                    <option value=<%=reach%>><%=reach%></option>
+                                <%}%>
+                            <%})%>
+                        </select>
+                    </div>
+                
+                <div class="form-group">
+                    <label for="aboutCo">About <%=employer.company%></label>
+                    <textarea class='form-control' name="aboutCo" rows="5"><%=employer.aboutCo%></textarea>
+                </div>
+    
+                <button type="submit" class="btn btn-primary">Save</button> 
+            </form>
+        </div>
+    
+            <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+            <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+    </body>
+</html>
