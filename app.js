@@ -123,6 +123,9 @@ app.post('/register', (req, res) => {
     })
     .catch(error => {
         console.log('Error creating new user in firebase, or new employer or new user in mongodb:', error);
+        if (error.code === 'auth/email-already-in-use'){
+            res.send("Already registered with this email - please log in with that email, or create new account with another email");
+        };
     });
 
     
