@@ -80,65 +80,51 @@ app.post('/register', (req, res) => {
 
     firebase.auth().createUserWithEmailAndPassword(req.body.email, req.body.pw)
         
-    .then(() => {
-        // See the UserRecord reference doc for the contents of userRecord.
-        console.log('Successfully created new user');
+    .then((user) => {
+        
+        
+        var createdUser = new User({
+            firstname: req.body.firstName,
+            lastname: req.body.lastName,
+            uid: user.user.uid
+        });
+
+        let companyName = req.body.coName;
+        Employer.findOne({company: companyName}, (err, employer) => {
+            if(err) console.log(err);
+
+            if(employer){
+                createdUser.company = employer._id;
+                employer.users.push(createdUser._id);
+
+                createdUser.save();
+                employer.save();
+
+                console.log('employer found; user info in employer; employer info in user')
+                console.log('employer: \n'+employer);
+                console.log('user: \n'+createdUser);
+            }
+            else{
+                var createdEmployer = new Employer({
+                    company: companyName,
+                    users: [createdUser._id]
+                });
+
+                createdUser.company = createdEmployer._id;
+
+                createdUser.save();
+                createdEmployer.save();
+
+                console.log('employer created and saved: \n'+ createdEmployer);
+                console.log('user created and saved: \n'+createdUser);
+            }
+            res.redirect('/');
+        });
     })
     .catch(error => {
-        console.log('Error creating new user:', error);
+        console.log('Error creating new user in firebase, or new employer or new user in mongodb:', error);
     });
 
-    // get observer to access uid from user object, since sign in occurs
-    // automatically after createUser fn. 
-    firebase.auth().onAuthStateChanged( user => {
-        if(user) {
-            res.send(user);       
-        } else {
-            console.log("User signed out");
-            // res.redirect('/');
-        }
-    })
-
-    /*
-    var createdUser = new User({
-        firstname: req.body.firstName,
-        lastname: req.body.lastName 
-    }); 
-
-    let companyName = req.body.coName;
-    Employer.findOne({company: companyName}, (err, employer) => {
-        if(err) console.log(err);
-
-        if(employer){
-            createdUser.company = employer._id;
-            employer.users.push(createdUser._id);
-
-            createdUser.save();
-            employer.save();
-
-            
-            console.log('This is not the first time with this employer');
-            console.log('employer: \n'+employer);
-            console.log('user created and saved: \n'+createdUser);
-        }
-        else{
-            var createdEmployer = new Employer({
-                company: companyName
-            });
-
-            createdUser.company = createdEmployer._id;
-            createdEmployer.users.push(createdUser._id);
-
-            createdUser.save();
-            createdEmployer.save();
-
-            console.log('This IS the first time with this employer');
-            console.log('employer created and saved: \n'+ createdEmployer);
-            console.log('user created and saved: \n'+createdUser);
-        }
-        res.redirect('/');
-    });
-    */
     
 });
 
