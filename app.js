@@ -1,9 +1,29 @@
 const express = require('express'),
     bodyParser = require('body-parser'),
-    mongoose = require('mongoose');
-
+    mongoose = require('mongoose'),
+    firebase = require('firebase'),
+    admin = require('firebase-admin'),
+    serviceAccount = require('../cycloid-25cab-firebase-adminsdk-vrj16-47ca9a49d0.json');
+    // firebaseui = require('firebaseui');
     
 const app = express();
+
+let firebaseConfig = {
+    apiKey: "AIzaSyAGheMO8FQ_P32yHaSDMg1XoibyqRd9DGw",
+    authDomain: "cycloid-25cab.firebaseapp.com",
+    databaseURL: "https://cycloid-25cab.firebaseio.com",
+    projectId: "cycloid-25cab",
+    storageBucket: "cycloid-25cab.appspot.com",
+    messagingSenderId: "820408586358"
+};
+firebase.initializeApp(firebaseConfig);
+
+admin.initializeApp({
+    credential: admin.credential.cert(serviceAccount),
+    databaseURL: "https://cycloid-25cab.firebaseio.com"
+});
+
+
 
 app.set('view engine', 'ejs');
 app.use(bodyParser.json());
@@ -17,9 +37,8 @@ mongoose.connect(urlDB, {useNewUrlParser: true});
 const userSchema = new mongoose.Schema({
     firstname: String,
     lastname: String,
-    email: String, 
     company: {type: mongoose.Schema.Types.ObjectId, ref:'Employer'},
-    password: String
+    uid: String
 });
 let User = mongoose.model('User', userSchema);
 
@@ -57,13 +76,34 @@ app.get('/', (req, res) => {
 });
 
 app.post('/register', (req, res) => {
-    
+
+
+    firebase.auth().createUserWithEmailAndPassword(req.body.email, req.body.pw)
+        
+    .then(() => {
+        // See the UserRecord reference doc for the contents of userRecord.
+        console.log('Successfully created new user');
+    })
+    .catch(error => {
+        console.log('Error creating new user:', error);
+    });
+
+    // get observer to access uid from user object, since sign in occurs
+    // automatically after createUser fn. 
+    firebase.auth().onAuthStateChanged( user => {
+        if(user) {
+            res.send(user);       
+        } else {
+            console.log("User signed out");
+            // res.redirect('/');
+        }
+    })
+
+    /*
     var createdUser = new User({
         firstname: req.body.firstName,
-        lastname: req.body.lastName,
-        email: req.body.email,
-        password: req.body.pw
-    });
+        lastname: req.body.lastName 
+    }); 
 
     let companyName = req.body.coName;
     Employer.findOne({company: companyName}, (err, employer) => {
@@ -98,10 +138,19 @@ app.post('/register', (req, res) => {
         }
         res.redirect('/');
     });
+    */
     
 });
 
 app.post('/login', (req, res) => {
+
+    firebase.auth().signInWithEmailAndPassword(req.body.emailInput, req.body.pwInput)
+    .then(()=>{
+        console.log("Successful firebase login");
+    })
+    .catch((error) => {
+        console.log("Error Code: \n" + error.code + "\nError Message: \n" + error.message);
+    });
 
     User.findOne({
         "email": req.body.emailInput,
@@ -123,13 +172,15 @@ app.post('/login', (req, res) => {
 });
 
 app.get('/users', (req, res) => {
-    Employer.findOne({company:"tottenham"}, (err) => {
-        if (err) console.log(err);
-    })
-    .populate('users')
-    .exec((err, users) => {
-        res.send(users);
-    });
+
+    admin.auth().listUsers(1000, )
+    // Employer.findOne({company:"tottenham"}, (err) => {
+    //     if (err) console.log(err);
+    // })
+    // .populate('users')
+    // .exec((err, users) => {
+    //     res.send(users);
+    // });
 });
 
 app.get('/roles', (req, res) => {
@@ -137,6 +188,9 @@ app.get('/roles', (req, res) => {
     Issue with first finding roles - if new registration, new user does not have roles!! 
     It would have been best starting with employer finding, and then populating roles
     rather than finding roles and populating the company. But what's done is done
+    
+    With Firebase, start with uid, then find UserModel, then find User's company, and then company's 
+    roles, and show those roles. 
     */
     Role.find({company: currentUser.company}, (err, docs) => {
         if (err) console.log(err);
@@ -159,11 +213,8 @@ app.get('/roles', (req, res) => {
             populate('roles').
             exec((err, employerDocs) => {
                 if(err) console.log(err);
-                let rolesRenderObject = {
-                    roles: companyRoles,
-                    employer: employerDocs
-                }
-                res.render('home', rolesRenderObject);
+
+                res.render('home', {employer: employerDocs});
             });
         }
     });
