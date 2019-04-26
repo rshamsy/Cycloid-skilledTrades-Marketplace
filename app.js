@@ -71,9 +71,25 @@ const roleSchema = new mongoose.Schema({
 });
 let Role = mongoose.model('Role', roleSchema);
 
+function authCheckMiddleware (req, res, next) {
+    firebase.auth().onAuthStateChanged(user => {
+        if(user) {
+            next();
+        } else {
+            console.log("In middleware - user logged out.");
+            
+            // Have flash message here to indicate sign in required
+
+            res.redirect('/');
+            // res.render('index');
+        }
+    });
+};
+
 app.get('/', (req, res) => {
     res.render('index');
 });
+
 
 app.post('/register', (req, res) => {
 
@@ -162,7 +178,7 @@ app.post('/login', (req, res) => {
 
 });
 
-app.get('/roles', (req, res) => {
+app.get('/roles', authCheckMiddleware, (req, res) => {
 
     firebase.auth().onAuthStateChanged(user => {
         
@@ -193,7 +209,7 @@ app.get('/roles', (req, res) => {
     
 });
 
-app.get('/roles/new',(req, res) => {
+app.get('/roles/new',authCheckMiddleware, (req, res) => {
     res.render('new-role');
 });
 
@@ -263,18 +279,22 @@ app.post('/roles/new', (req, res) => {
     
 });
 
-app.get("/roles/:id", (req, res) => {
+app.get("/roles/:id", authCheckMiddleware, (req, res) => {
+
     Role.findById(req.params.id, (err, role) => {
         if(err) console.log(err);
     }).
     populate("company").
     exec((err, role) => {
+        if (err) res.send(err);
         // res.send(role);
         res.render('role', {role: role});
     });
+
+    
 });
 
-app.get("/roles/:id/edit", (req, res) => {
+app.get("/roles/:id/edit", authCheckMiddleware, (req, res) => {
     Role.findById(req.params.id, (err, role) => {
         if (err) console.log(err);
     }).
@@ -285,7 +305,7 @@ app.get("/roles/:id/edit", (req, res) => {
     });
     
 });
-app.post("/roles/:id/edit", (req, res) => {
+app.post("/roles/:id/edit", authCheckMiddleware, (req, res) => {
     Role.findByIdAndUpdate(req.params.id, {
         roleTitle: req.body.roleTitle,
         majorTradeArea: req.body.majorTradeArea,
@@ -306,7 +326,7 @@ app.post("/roles/:id/edit", (req, res) => {
     });
 });
 
-app.get('/employer/:id', (req, res) => {
+app.get('/employer/:id', authCheckMiddleware, (req, res) => {
     Employer.findById(req.params.id, (err, empFound) => {
         if(err) console.log(err);
         else {
@@ -315,7 +335,7 @@ app.get('/employer/:id', (req, res) => {
     });
 });
 
-app.get('/employer/:id/edit', (req, res) => {
+app.get('/employer/:id/edit', authCheckMiddleware, (req, res) => {
     Employer.findById(req.params.id, (err, employerFound) => {
         if(err) console.log(err);
         else {
@@ -324,7 +344,7 @@ app.get('/employer/:id/edit', (req, res) => {
     });
 });
 
-app.post('/employer/:id/edit', (req, res) => {
+app.post('/employer/:id/edit', authCheckMiddleware, (req, res) => {
     
     Employer.findByIdAndUpdate(req.params.id, {
         company: req.body.company,
