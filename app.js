@@ -168,7 +168,7 @@ app.get('/roles', (req, res) => {
         
         let searchUid = user.uid;
         User.findOne({uid: searchUid}, (err, userFound) => {
-            if (err) console.log(err);
+            if (err) console.log("Error finding user with uid: " + err);
         })
         .populate({
             path: 'company',
@@ -179,51 +179,16 @@ app.get('/roles', (req, res) => {
             }
         })
         .exec((err, userDoc) => {
-            if (err) console.log(err);
+            if (err) console.log("Error deep populating: " + err);
             if(userDoc) {
                 // res.send(userDoc);
                 res.render('home', {company: userDoc.company})
 
             } else {
-                console.log('Something went wrong deep-populating roles');
+                console.log("userDoc is null");
             }
         });
     });
-    /*
-    Issue with first finding roles - if new registration, new user does not have roles!! 
-    It would have been best starting with employer finding, and then populating roles
-    rather than finding roles and populating the company. But what's done is done
-    
-    With Firebase, start with uid, then find UserModel, then find User's company, and then company's 
-    roles, and show those roles. 
-    */
-    // Role.find({company: currentUser.company}, (err, docs) => {
-    //     if (err) console.log(err);
-    // }).
-    // populate('company').
-    // exec((err,companyRoles) => {
-    //     if(err) console.log(err);
-    //     // res.send(companyRoles);
-    //     if (companyRoles) res.render('home', {roles: companyRoles, company: currentUser.company});
-    //     else {
-    //         /*
-    //         Following code replaced with line <<res.render('home', companyRoles)>> 
-    //         because company information is populated, and company schema has all 
-    //         emmployer related info that would be required anyways, and is 
-    //         associated to each role. 
-    //         */
-    //         Employer.find({company: currentUser.company}, (err, docs) => {
-    //             if(err) console.log(err);
-    //         }).
-    //         populate('roles').
-    //         exec((err, employerDocs) => {
-    //             if(err) console.log(err);
-
-    //             res.render('home', {employer: employerDocs});
-    //         });
-    //     }
-    // });
-
 
     
 });
@@ -236,45 +201,66 @@ app.post('/roles/new', (req, res) => {
 
     //create new Role from scratch using each req.body param!
 
-    
-    var newRole = new Role({
-        roleTitle: req.body.roleTitle,
-        location: req.body.location,
-        majorTradeArea: req.body.majorTradeArea,
-        tradeName: req.body.tradeName,
-        responsibilities: req.body.responsibilities,
-        journeyperson: req.body.journeyperson, 
-        skillsReq: req.body.skillsReq,
-        trainingReq: req.body.trainingReq,
-        trainingProvided: req.body.trainingProvided,
-        fulltimePay: req.body.fulltimePay,
-        company: currentUser.company
-    })
-    
-    newRole.save();
+    firebase.auth().onAuthStateChanged( user => {
+        if (user) {
+            // console.log(user);
 
-    // add association of role created to employer doc
-    Employer.findById(currentUser.company, (err, company) => {
-        if(err) console.log(err);
-        else{
-            company.roles.push(newRole._id);
-            company.save();
-        };
+            User.findOne({uid: user.uid}, (err) => {
+                if(err) console.log("Error finding current user's User model Doc: \n"+err);
+            }).populate({
+                path: "company"
+            }).exec((err, userFound) => {
+                if(err) console.log("Error after populating "+err);
+                if (userFound) {
+                    var newRole = new Role({
+                        roleTitle: req.body.roleTitle,
+                        location: req.body.location,
+                        majorTradeArea: req.body.majorTradeArea,
+                        tradeName: req.body.tradeName,
+                        responsibilities: req.body.responsibilities,
+                        journeyperson: req.body.journeyperson, 
+                        skillsReq: req.body.skillsReq,
+                        trainingReq: req.body.trainingReq,
+                        trainingProvided: req.body.trainingProvided,
+                        fulltimePay: req.body.fulltimePay,
+                        company: userFound.company._id
+                    });
+
+                    newRole.save();  
+                    // console.log("New Role created and saved\n" + newRole);
+
+
+                    Employer.findById(newRole.company, (err, company) => {
+                        if(err) console.log("Error finding employer:\n "+err);
+                        if(company) {
+                
+                            // console.log("newRole._id: \n"+ newRole._id);
+                            // console.log("company.roles before push\n"+ company.roles);
+                            company.roles.push(newRole._id);
+                            // console.log("company.roles after push\n"+ company.roles);
+                            company.save();
+                            // console.log("Company updated and saved\n" + company);
+                        } else {
+                            console.log("Employer.findById returned null company")
+                        }
+                    });
+
+                    // console.log("User after roles update:\n" + userFound);
+
+                    res.redirect('/roles');
+
+                } else {
+                    console.log("No user found");
+                }
+            });
+            
+
+        } else {
+            res.redirect('/');
+        }
     });
     
-    // Role.findOne(req.body, (err, role) => {
-    //     if (err) console.log(err);
-    //     role.company = currentUser.company;
-    //     role.save((err)=>{
-    //         if (err) console.log(err);
-    //         console.log("Role created and saved:\n"+role);
-    //     });
-    // })
-
     
-    
-
-    res.redirect('/roles');
 });
 
 app.get("/roles/:id", (req, res) => {
