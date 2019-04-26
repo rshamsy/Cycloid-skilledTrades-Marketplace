@@ -134,45 +134,61 @@ app.post('/register', (req, res) => {
 app.post('/login', (req, res) => {
 
     firebase.auth().signInWithEmailAndPassword(req.body.emailInput, req.body.pwInput)
-    .then(()=>{
+    .then((user)=>{
         console.log("Successful firebase login");
+        // res.send(user);
+        res.redirect('/roles');
     })
     .catch((error) => {
         console.log("Error Code: \n" + error.code + "\nError Message: \n" + error.message);
     });
 
-    User.findOne({
-        "email": req.body.emailInput,
-        "password": req.body.pwInput
-    }, (err, found) => {
-        if(err) {
-            console.log(err);
-        }
-        if(!found){
-            res.redirect('/');
-        }
-        else {
-            console.log(found);
-            currentUser = found;
-            res.redirect('/roles');
-        }
-    });
-
-});
-
-app.get('/users', (req, res) => {
-
-    admin.auth().listUsers(1000, )
-    // Employer.findOne({company:"tottenham"}, (err) => {
-    //     if (err) console.log(err);
-    // })
-    // .populate('users')
-    // .exec((err, users) => {
-    //     res.send(users);
+    // User.findOne({
+    //     "email": req.body.emailInput,
+    //     "password": req.body.pwInput
+    // }, (err, found) => {
+    //     if(err) {
+    //         console.log(err);
+    //     }
+    //     if(!found){
+    //         res.redirect('/');
+    //     }
+    //     else {
+    //         console.log(found);
+    //         currentUser = found;
+    //         res.redirect('/roles');
+    //     }
     // });
+
 });
 
 app.get('/roles', (req, res) => {
+
+    firebase.auth().onAuthStateChanged(user => {
+        
+        let searchUid = user.uid;
+        User.findOne({uid: searchUid}, (err, userFound) => {
+            if (err) console.log(err);
+        })
+        .populate({
+            path: 'company',
+            model: 'Employer',
+            populate: {
+                path: 'roles',
+                model: 'Role'
+            }
+        })
+        .exec((err, userDoc) => {
+            if (err) console.log(err);
+            if(userDoc) {
+                // res.send(userDoc);
+                res.render('home', {company: userDoc.company})
+
+            } else {
+                console.log('Something went wrong deep-populating roles');
+            }
+        });
+    });
     /*
     Issue with first finding roles - if new registration, new user does not have roles!! 
     It would have been best starting with employer finding, and then populating roles
@@ -181,32 +197,32 @@ app.get('/roles', (req, res) => {
     With Firebase, start with uid, then find UserModel, then find User's company, and then company's 
     roles, and show those roles. 
     */
-    Role.find({company: currentUser.company}, (err, docs) => {
-        if (err) console.log(err);
-    }).
-    populate('company').
-    exec((err,companyRoles) => {
-        if(err) console.log(err);
-        // res.send(companyRoles);
-        if (companyRoles) res.render('home', {roles: companyRoles, company: currentUser.company});
-        else {
-            /*
-            Following code replaced with line <<res.render('home', companyRoles)>> 
-            because company information is populated, and company schema has all 
-            emmployer related info that would be required anyways, and is 
-            associated to each role. 
-            */
-            Employer.find({company: currentUser.company}, (err, docs) => {
-                if(err) console.log(err);
-            }).
-            populate('roles').
-            exec((err, employerDocs) => {
-                if(err) console.log(err);
+    // Role.find({company: currentUser.company}, (err, docs) => {
+    //     if (err) console.log(err);
+    // }).
+    // populate('company').
+    // exec((err,companyRoles) => {
+    //     if(err) console.log(err);
+    //     // res.send(companyRoles);
+    //     if (companyRoles) res.render('home', {roles: companyRoles, company: currentUser.company});
+    //     else {
+    //         /*
+    //         Following code replaced with line <<res.render('home', companyRoles)>> 
+    //         because company information is populated, and company schema has all 
+    //         emmployer related info that would be required anyways, and is 
+    //         associated to each role. 
+    //         */
+    //         Employer.find({company: currentUser.company}, (err, docs) => {
+    //             if(err) console.log(err);
+    //         }).
+    //         populate('roles').
+    //         exec((err, employerDocs) => {
+    //             if(err) console.log(err);
 
-                res.render('home', {employer: employerDocs});
-            });
-        }
-    });
+    //             res.render('home', {employer: employerDocs});
+    //         });
+    //     }
+    // });
 
 
     
