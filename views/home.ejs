@@ -26,13 +26,6 @@
             </div>
         </nav>
 
-
-        <%if(!roles[0]){%>
-            <%var firstCo = employer%>
-        <%} else {%>
-            <%var firstCo = roles[0].company;%>
-        <%}%>
-
         <div class="card mb-3" style="max-width: 800px; margin: 0 auto">
             <div class="row no-gutters">
                 <div class="col-md-4">
@@ -40,26 +33,26 @@
                 </div>
                 <div class="col-md-8">
                     <div class="card-body">
-                        <h5 class="card-title">Employer: <%=firstCo.company%></h5>
-                        <a class='card-text' href=<%=firstCo.website%>>Company Website</a>
+                        <h5 class="card-title">Employer: <%=company.company%></h5>
+                        <a class='card-text' href=<%=company.website%>>Company Website</a>
                         <p class="card-text">
-                            Size: <%=firstCo.size%>
+                            Size: <%=company.size%>
                         </p>
                         <p class="card-text"></p>
-                            Type of Organization: <%=firstCo.type%>
+                            Type of Organization: <%=company.type%>
                         </p>
                         <p class="card-text"></p>
-                            Founded: <%=firstCo.found%>
+                            Founded: <%=company.found%>
                         </p>
                         <p class="card-text">
-                            Geographic Reach: <%=firstCo.geographicReach%>
+                            Geographic Reach: <%=company.geographicReach%>
                         </p>
                         <p class="card-text">
                             <small class="text-muted">
                                 This information will be automatically populated for each role 
                             </small>
                         </p>
-                        <a class="btn btn-primary btn-sm" href=<%="/employer/"+firstCo._id%> role="button">
+                        <a class="btn btn-primary btn-sm" href=<%="/employer/"+company._id%> role="button">
                             View/Edit Employer Information
                         </a>
 
@@ -78,7 +71,7 @@
 
         <div class="container">
             <div class="row">
-                <%roles.forEach((role) => {%>
+                <%company.roles.forEach((role) => {%>
 
                 <div class="col-md-3">
                     <div class="card border-primary">

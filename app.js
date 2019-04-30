@@ -1,9 +1,29 @@
 const express = require('express'),
     bodyParser = require('body-parser'),
-    mongoose = require('mongoose');
-
+    mongoose = require('mongoose'),
+    firebase = require('firebase'),
+    admin = require('firebase-admin'),
+    serviceAccount = require('../cycloid-25cab-firebase-adminsdk-vrj16-47ca9a49d0.json');
+    // firebaseui = require('firebaseui');
     
 const app = express();
+
+let firebaseConfig = {
+    apiKey: "AIzaSyAGheMO8FQ_P32yHaSDMg1XoibyqRd9DGw",
+    authDomain: "cycloid-25cab.firebaseapp.com",
+    databaseURL: "https://cycloid-25cab.firebaseio.com",
+    projectId: "cycloid-25cab",
+    storageBucket: "cycloid-25cab.appspot.com",
+    messagingSenderId: "820408586358"
+};
+firebase.initializeApp(firebaseConfig);
+
+admin.initializeApp({
+    credential: admin.credential.cert(serviceAccount),
+    databaseURL: "https://cycloid-25cab.firebaseio.com"
+});
+
+
 
 app.set('view engine', 'ejs');
 app.use(bodyParser.json());
@@ -17,9 +37,8 @@ mongoose.connect(urlDB, {useNewUrlParser: true});
 const userSchema = new mongoose.Schema({
     firstname: String,
     lastname: String,
-    email: String, 
     company: {type: mongoose.Schema.Types.ObjectId, ref:'Employer'},
-    password: String
+    uid: String
 });
 let User = mongoose.model('User', userSchema);
 
@@ -52,127 +71,145 @@ const roleSchema = new mongoose.Schema({
 });
 let Role = mongoose.model('Role', roleSchema);
 
+function authCheckMiddleware (req, res, next) {
+    firebase.auth().onAuthStateChanged(user => {
+        if(user) {
+            next();
+        } else {
+            console.log("In middleware - user logged out.");
+            
+            // Have flash message here to indicate sign in required
+
+            res.redirect('/');
+            // res.render('index');
+        }
+    });
+};
+
 app.get('/', (req, res) => {
     res.render('index');
 });
 
+
 app.post('/register', (req, res) => {
-    
-    var createdUser = new User({
-        firstname: req.body.firstName,
-        lastname: req.body.lastName,
-        email: req.body.email,
-        password: req.body.pw
+
+
+    firebase.auth().createUserWithEmailAndPassword(req.body.email, req.body.pw)
+        
+    .then((user) => {
+        
+        
+        var createdUser = new User({
+            firstname: req.body.firstName,
+            lastname: req.body.lastName,
+            uid: user.user.uid
+        });
+
+        let companyName = req.body.coName;
+        Employer.findOne({company: companyName}, (err, employer) => {
+            if(err) console.log(err);
+
+            if(employer){
+                createdUser.company = employer._id;
+                employer.users.push(createdUser._id);
+
+                createdUser.save();
+                employer.save();
+
+                console.log('employer found; user info in employer; employer info in user')
+                console.log('employer: \n'+employer);
+                console.log('user: \n'+createdUser);
+            }
+            else{
+                var createdEmployer = new Employer({
+                    company: companyName,
+                    users: [createdUser._id]
+                });
+
+                createdUser.company = createdEmployer._id;
+
+                createdUser.save();
+                createdEmployer.save();
+
+                console.log('employer created and saved: \n'+ createdEmployer);
+                console.log('user created and saved: \n'+createdUser);
+            }
+            res.redirect('/');
+        });
+    })
+    .catch(error => {
+        console.log('Error creating new user in firebase, or new employer or new user in mongodb:', error);
+        if (error.code === 'auth/email-already-in-use'){
+            res.send("Already registered with this email - please log in with that email, or create new account with another email");
+        };
     });
 
-    let companyName = req.body.coName;
-    Employer.findOne({company: companyName}, (err, employer) => {
-        if(err) console.log(err);
-
-        if(employer){
-            createdUser.company = employer._id;
-            employer.users.push(createdUser._id);
-
-            createdUser.save();
-            employer.save();
-
-            
-            console.log('This is not the first time with this employer');
-            console.log('employer: \n'+employer);
-            console.log('user created and saved: \n'+createdUser);
-        }
-        else{
-            var createdEmployer = new Employer({
-                company: companyName
-            });
-
-            createdUser.company = createdEmployer._id;
-            createdEmployer.users.push(createdUser._id);
-
-            createdUser.save();
-            createdEmployer.save();
-
-            console.log('This IS the first time with this employer');
-            console.log('employer created and saved: \n'+ createdEmployer);
-            console.log('user created and saved: \n'+createdUser);
-        }
-        res.redirect('/');
-    });
     
 });
 
 app.post('/login', (req, res) => {
 
-    User.findOne({
-        "email": req.body.emailInput,
-        "password": req.body.pwInput
-    }, (err, found) => {
-        if(err) {
-            console.log(err);
-        }
-        if(!found){
-            res.redirect('/');
-        }
-        else {
-            console.log(found);
-            currentUser = found;
-            res.redirect('/roles');
-        }
-    });
-
-});
-
-app.get('/users', (req, res) => {
-    Employer.findOne({company:"tottenham"}, (err) => {
-        if (err) console.log(err);
+    firebase.auth().signInWithEmailAndPassword(req.body.emailInput, req.body.pwInput)
+    .then((user)=>{
+        console.log("Successful firebase login");
+        // res.send(user);
+        res.redirect('/roles');
     })
-    .populate('users')
-    .exec((err, users) => {
-        res.send(users);
+    .catch((error) => {
+        console.log("Error Code: \n" + error.code + "\nError Message: \n" + error.message);
     });
+
+    // User.findOne({
+    //     "email": req.body.emailInput,
+    //     "password": req.body.pwInput
+    // }, (err, found) => {
+    //     if(err) {
+    //         console.log(err);
+    //     }
+    //     if(!found){
+    //         res.redirect('/');
+    //     }
+    //     else {
+    //         console.log(found);
+    //         currentUser = found;
+    //         res.redirect('/roles');
+    //     }
+    // });
+
 });
 
-app.get('/roles', (req, res) => {
-    /*
-    Issue with first finding roles - if new registration, new user does not have roles!! 
-    It would have been best starting with employer finding, and then populating roles
-    rather than finding roles and populating the company. But what's done is done
-    */
-    Role.find({company: currentUser.company}, (err, docs) => {
-        if (err) console.log(err);
-    }).
-    populate('company').
-    exec((err,companyRoles) => {
-        if(err) console.log(err);
-        // res.send(companyRoles);
-        if (companyRoles) res.render('home', {roles: companyRoles, company: currentUser.company});
-        else {
-            /*
-            Following code replaced with line <<res.render('home', companyRoles)>> 
-            because company information is populated, and company schema has all 
-            emmployer related info that would be required anyways, and is 
-            associated to each role. 
-            */
-            Employer.find({company: currentUser.company}, (err, docs) => {
-                if(err) console.log(err);
-            }).
-            populate('roles').
-            exec((err, employerDocs) => {
-                if(err) console.log(err);
-                let rolesRenderObject = {
-                    roles: companyRoles,
-                    employer: employerDocs
-                }
-                res.render('home', rolesRenderObject);
-            });
-        }
-    });
+app.get('/roles', authCheckMiddleware, (req, res) => {
 
+    firebase.auth().onAuthStateChanged(user => {
+        
+        let searchUid = user.uid;
+        User.findOne({uid: searchUid}, (err, userFound) => {
+            if (err) console.log("Error finding user with uid: " + err);
+        })
+        .populate({
+            path: 'company',
+            model: 'Employer',
+            populate: {
+                path: 'roles',
+                model: 'Role'
+            }
+        })
+        .exec((err, userDoc) => {
+            if (err) console.log("Error deep populating: " + err);
+            if(userDoc) {
+                // res.send(userDoc);
+                res.render('home', {company: userDoc.company})
+
+            } else {
+                console.log("userDoc is null");
+            }
+        });
+    });
 
     
 });
 
-app.get('/roles/new',(req, res) => {
+app.get('/roles/new',authCheckMiddleware, (req, res) => {
     res.render('new-role');
 });
 
@@ -180,59 +217,84 @@ app.post('/roles/new', (req, res) => {
 
     //create new Role from scratch using each req.body param!
 
-    
-    var newRole = new Role({
-        roleTitle: req.body.roleTitle,
-        location: req.body.location,
-        majorTradeArea: req.body.majorTradeArea,
-        tradeName: req.body.tradeName,
-        responsibilities: req.body.responsibilities,
-        journeyperson: req.body.journeyperson, 
-        skillsReq: req.body.skillsReq,
-        trainingReq: req.body.trainingReq,
-        trainingProvided: req.body.trainingProvided,
-        fulltimePay: req.body.fulltimePay,
-        company: currentUser.company
-    })
-    
-    newRole.save();
+    firebase.auth().onAuthStateChanged( user => {
+        if (user) {
+            // console.log(user);
 
-    // add association of role created to employer doc
-    Employer.findById(currentUser.company, (err, company) => {
-        if(err) console.log(err);
-        else{
-            company.roles.push(newRole._id);
-            company.save();
-        };
+            User.findOne({uid: user.uid}, (err) => {
+                if(err) console.log("Error finding current user's User model Doc: \n"+err);
+            }).populate({
+                path: "company"
+            }).exec((err, userFound) => {
+                if(err) console.log("Error after populating "+err);
+                if (userFound) {
+                    var newRole = new Role({
+                        roleTitle: req.body.roleTitle,
+                        location: req.body.location,
+                        majorTradeArea: req.body.majorTradeArea,
+                        tradeName: req.body.tradeName,
+                        responsibilities: req.body.responsibilities,
+                        journeyperson: req.body.journeyperson, 
+                        skillsReq: req.body.skillsReq,
+                        trainingReq: req.body.trainingReq,
+                        trainingProvided: req.body.trainingProvided,
+                        fulltimePay: req.body.fulltimePay,
+                        company: userFound.company._id
+                    });
+
+                    newRole.save();  
+                    // console.log("New Role created and saved\n" + newRole);
+
+
+                    Employer.findById(newRole.company, (err, company) => {
+                        if(err) console.log("Error finding employer:\n "+err);
+                        if(company) {
+                
+                            // console.log("newRole._id: \n"+ newRole._id);
+                            // console.log("company.roles before push\n"+ company.roles);
+                            company.roles.push(newRole._id);
+                            // console.log("company.roles after push\n"+ company.roles);
+                            company.save();
+                            // console.log("Company updated and saved\n" + company);
+                        } else {
+                            console.log("Employer.findById returned null company")
+                        }
+                    });
+
+                    // console.log("User after roles update:\n" + userFound);
+
+                    res.redirect('/roles');
+
+                } else {
+                    console.log("No user found");
+                }
+            });
+            
+
+        } else {
+            res.redirect('/');
+        }
     });
     
-    // Role.findOne(req.body, (err, role) => {
-    //     if (err) console.log(err);
-    //     role.company = currentUser.company;
-    //     role.save((err)=>{
-    //         if (err) console.log(err);
-    //         console.log("Role created and saved:\n"+role);
-    //     });
-    // })
-
     
-    
-
-    res.redirect('/roles');
 });
 
-app.get("/roles/:id", (req, res) => {
+app.get("/roles/:id", authCheckMiddleware, (req, res) => {
+
     Role.findById(req.params.id, (err, role) => {
         if(err) console.log(err);
     }).
     populate("company").
     exec((err, role) => {
+        if (err) res.send(err);
         // res.send(role);
         res.render('role', {role: role});
     });
+
+    
 });
 
-app.get("/roles/:id/edit", (req, res) => {
+app.get("/roles/:id/edit", authCheckMiddleware, (req, res) => {
     Role.findById(req.params.id, (err, role) => {
         if (err) console.log(err);
     }).
@@ -243,7 +305,7 @@ app.get("/roles/:id/edit", (req, res) => {
     });
     
 });
-app.post("/roles/:id/edit", (req, res) => {
+app.post("/roles/:id/edit", authCheckMiddleware, (req, res) => {
     Role.findByIdAndUpdate(req.params.id, {
         roleTitle: req.body.roleTitle,
         majorTradeArea: req.body.majorTradeArea,
@@ -264,7 +326,7 @@ app.post("/roles/:id/edit", (req, res) => {
     });
 });
 
-app.get('/employer/:id', (req, res) => {
+app.get('/employer/:id', authCheckMiddleware, (req, res) => {
     Employer.findById(req.params.id, (err, empFound) => {
         if(err) console.log(err);
         else {
@@ -273,7 +335,7 @@ app.get('/employer/:id', (req, res) => {
     });
 });
 
-app.get('/employer/:id/edit', (req, res) => {
+app.get('/employer/:id/edit', authCheckMiddleware, (req, res) => {
     Employer.findById(req.params.id, (err, employerFound) => {
         if(err) console.log(err);
         else {
@@ -282,7 +344,7 @@ app.get('/employer/:id/edit', (req, res) => {
     });
 });
 
-app.post('/employer/:id/edit', (req, res) => {
+app.post('/employer/:id/edit', authCheckMiddleware, (req, res) => {
     
     Employer.findByIdAndUpdate(req.params.id, {
         company: req.body.company,
