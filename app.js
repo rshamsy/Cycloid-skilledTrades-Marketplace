@@ -315,7 +315,7 @@ app.put("/roles/:id/edit", authCheckMiddleware, (req, res) => {
 });
 
 app.delete("/roles/:id", authCheckMiddleware, (req, res) => {
-    Role.findByIdAndRemove(req.params.id, (err, role) => {
+    Role.findOneAndRemove({ _id: req.params.id }, (err, role) => {
         if(err) console.log(err)
         else {
             res.redirect('/roles');
