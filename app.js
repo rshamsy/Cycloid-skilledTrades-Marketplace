@@ -3,7 +3,8 @@ const express = require('express'),
     mongoose = require('mongoose'),
     firebase = require('firebase'),
     admin = require('firebase-admin'),
-    serviceAccount = require('../cycloid-25cab-firebase-adminsdk-vrj16-47ca9a49d0.json');
+    serviceAccount = require('../cycloid-25cab-firebase-adminsdk-vrj16-47ca9a49d0.json'),
+    methodOverride = require('method-override');
     // firebaseui = require('firebaseui');
     
 const app = express();
@@ -29,10 +30,11 @@ app.set('view engine', 'ejs');
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({extended:true}));
 app.use(express.static('public'));
+app.use(methodOverride("_method"));
 
 const urlDB = "mongodb://localhost:27017/cycloid-app";
 // const urlDB = "mongodb://rshamsy:cycloidapp1@ds239936.mlab.com:39936/cycloid-app"
-mongoose.connect(urlDB, {useNewUrlParser: true});
+mongoose.connect(urlDB, {useNewUrlParser: true, useFindAndModify: false});
 
 const userSchema = new mongoose.Schema({
     firstname: String,
@@ -158,23 +160,6 @@ app.post('/login', (req, res) => {
     .catch((error) => {
         console.log("Error Code: \n" + error.code + "\nError Message: \n" + error.message);
     });
-
-    // User.findOne({
-    //     "email": req.body.emailInput,
-    //     "password": req.body.pwInput
-    // }, (err, found) => {
-    //     if(err) {
-    //         console.log(err);
-    //     }
-    //     if(!found){
-    //         res.redirect('/');
-    //     }
-    //     else {
-    //         console.log(found);
-    //         currentUser = found;
-    //         res.redirect('/roles');
-    //     }
-    // });
 
 });
 
@@ -305,8 +290,8 @@ app.get("/roles/:id/edit", authCheckMiddleware, (req, res) => {
     });
     
 });
-app.post("/roles/:id/edit", authCheckMiddleware, (req, res) => {
-    Role.findByIdAndUpdate(req.params.id, {
+app.put("/roles/:id/edit", authCheckMiddleware, (req, res) => {
+    Role.findOneAndUpdate({ _id: req.params.id }, {
         roleTitle: req.body.roleTitle,
         majorTradeArea: req.body.majorTradeArea,
         tradeName: req.body.tradeName,
@@ -322,6 +307,17 @@ app.post("/roles/:id/edit", authCheckMiddleware, (req, res) => {
         else{
             role.save();
             res.redirect('/roles/'+req.params.id);
+            return;
+        }
+    });
+});
+
+app.delete("/roles/:id", authCheckMiddleware, (req, res) => {
+    Role.findByIdAndRemove(req.params.id, (err, role) => {
+        if(err) console.log(err)
+        else {
+            res.redirect('/roles');
+            // Go to edit role route and add a delete button that leads to this route.
         }
     });
 });

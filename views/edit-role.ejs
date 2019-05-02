@@ -13,9 +13,8 @@
     <body>
         <h3>Edit role info below</h3>
         <div class="container">
-
         
-            <form action=<%="/roles/" + role._id + "/edit" %> method="POST">
+            <form method="POST" action=<%="/roles/" + role._id + "/edit?_method=PUT" %>>
         
                 <div class="form-group">
                     <label for="roleTitle">Position Title</label>
