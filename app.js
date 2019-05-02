@@ -83,6 +83,7 @@ function authCheckMiddleware (req, res, next) {
             // Have flash message here to indicate sign in required
 
             res.redirect('/');
+            return;
             // res.render('index');
         }
     });
@@ -196,6 +197,7 @@ app.get('/roles', authCheckMiddleware, (req, res) => {
 
 app.get('/roles/new',authCheckMiddleware, (req, res) => {
     res.render('new-role');
+    return;
 });
 
 app.post('/roles/new', (req, res) => {
@@ -327,6 +329,7 @@ app.get('/employer/:id', authCheckMiddleware, (req, res) => {
         if(err) console.log(err);
         else {
             res.render('employer', {employer: empFound});
+            return;
         }
     });
 });
@@ -336,13 +339,14 @@ app.get('/employer/:id/edit', authCheckMiddleware, (req, res) => {
         if(err) console.log(err);
         else {
             res.render('edit-employer', {employer: employerFound});
+            return;
         }
     });
 });
 
-app.post('/employer/:id/edit', authCheckMiddleware, (req, res) => {
+app.put('/employer/:id/edit', authCheckMiddleware, (req, res) => {
     
-    Employer.findByIdAndUpdate(req.params.id, {
+    Employer.findOneAndUpdate({ _id: req.params.id }, {
         company: req.body.company,
         size: req.body.size,
         website: req.body.website,
@@ -355,6 +359,7 @@ app.post('/employer/:id/edit', authCheckMiddleware, (req, res) => {
         else{
             employer.save();
             res.redirect('/employer/'+req.params.id);
+            return;
         }
     });
 });

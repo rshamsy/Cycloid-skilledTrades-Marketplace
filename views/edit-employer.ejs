@@ -13,7 +13,7 @@
     <body>  
         <div class="container">
             <h3>Edit company info below</h3>
-            <form action=<%="/employer/" + employer._id + "/edit" %> method="POST">
+            <form method="POST" action=<%="/employer/" + employer._id + "/edit?_method=PUT" %>>
         
                 <div class='form-group'>
                     <label for="company">Company Name</label>
