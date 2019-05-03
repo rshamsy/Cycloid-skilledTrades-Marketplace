@@ -69,13 +69,13 @@
                         <span class="cardTextTitle">Date Updated:</span> <%=role.dateUpdated%>
                     </p>
 
-                    <a href=<%="/roles/"+role._id+"/edit"%> class="btn btn-primary">Edit Role Info</a>
-                    <form method="POST" action=<%="/roles/" + role._id + "?_method=DELETE" %>>
+                    <a href=<%="/company/roles/"+role._id+"/edit"%> class="btn btn-primary">Edit Role Info</a>
+                    <form method="POST" action=<%="/company/roles/" + role._id + "?_method=DELETE" %>>
                         <button type="submit" class="btn btn-primary">Delete Role</button>   
                     </form>
                 </div>
             </div>
-            <a href="/roles" class="btn btn-primary">Go back</a>
+            <a href="/company/roles" class="btn btn-primary">Go back</a>
         </div>
     
   

@@ -112,7 +112,7 @@ app.get('/', (req, res) => {
 });
 
 
-app.post('/register', (req, res) => {
+app.post('/company/register', (req, res) => {
 
 
     firebase.auth().createUserWithEmailAndPassword(req.body.email, req.body.pw)
@@ -168,13 +168,13 @@ app.post('/register', (req, res) => {
     
 });
 
-app.post('/login', (req, res) => {
+app.post('/company/login', (req, res) => {
 
     firebase.auth().signInWithEmailAndPassword(req.body.emailInput, req.body.pwInput)
     .then((user)=>{
         console.log("Successful firebase login");
         // res.send(user);
-        res.redirect('/roles');
+        res.redirect('/company/roles');
         return;
     })
     .catch((error) => {
@@ -189,7 +189,7 @@ app.get('/logout', (req, res) => {
     });
 });
 
-app.get('/roles', authCheckMiddleware, (req, res) => {
+app.get('/company/roles', authCheckMiddleware, (req, res) => {
 
     firebase.auth().onAuthStateChanged(user => {
         
@@ -223,78 +223,73 @@ app.get('/roles', authCheckMiddleware, (req, res) => {
     
 });
 
-app.get('/roles/new',authCheckMiddleware, (req, res) => {
+app.get('/company/roles/new',authCheckMiddleware, (req, res) => {
     res.render('new-role');
     return;
 });
 
-app.post('/roles/new', (req, res) => {
+app.post('/company/roles/new', (req, res) => {
 
     //create new Role from scratch using each req.body param!
 
     firebase.auth().onAuthStateChanged( user => {
-        if (user) {
-            // console.log(user);
+        // console.log(user);
 
-            User.findOne({uid: user.uid}, (err) => {
-                if(err) console.log("Error finding current user's User model Doc: \n"+err);
-            }).populate({
-                path: "company"
-            }).exec((err, userFound) => {
-                if(err) console.log("Error after populating "+err);
-                if (userFound) {
-                    var newRole = new Role({
-                        roleTitle: req.body.roleTitle,
-                        location: req.body.location,
-                        majorTradeArea: req.body.majorTradeArea,
-                        tradeName: req.body.tradeName,
-                        responsibilities: req.body.responsibilities,
-                        journeyperson: req.body.journeyperson, 
-                        skillsReq: req.body.skillsReq,
-                        trainingReq: req.body.trainingReq,
-                        trainingProvided: req.body.trainingProvided,
-                        fulltimePay: req.body.fulltimePay,
-                        company: userFound.company._id
-                    });
+        User.findOne({uid: user.uid}, (err) => {
+            if(err) console.log("Error finding current user's User model Doc: \n"+err);
+        }).populate({
+            path: "company"
+        }).exec((err, userFound) => {
+            if(err) console.log("Error after populating "+err);
+            if (userFound) {
+                var newRole = new Role({
+                    roleTitle: req.body.roleTitle,
+                    location: req.body.location,
+                    majorTradeArea: req.body.majorTradeArea,
+                    tradeName: req.body.tradeName,
+                    responsibilities: req.body.responsibilities,
+                    journeyperson: req.body.journeyperson, 
+                    skillsReq: req.body.skillsReq,
+                    trainingReq: req.body.trainingReq,
+                    trainingProvided: req.body.trainingProvided,
+                    fulltimePay: req.body.fulltimePay,
+                    company: userFound.company._id
+                });
 
-                    newRole.save();  
-                    // console.log("New Role created and saved\n" + newRole);
+                newRole.save();  
+                // console.log("New Role created and saved\n" + newRole);
 
 
-                    Employer.findById(newRole.company, (err, company) => {
-                        if(err) console.log("Error finding employer:\n "+err);
-                        if(company) {
-                
-                            // console.log("newRole._id: \n"+ newRole._id);
-                            // console.log("company.roles before push\n"+ company.roles);
-                            company.roles.push(newRole._id);
-                            // console.log("company.roles after push\n"+ company.roles);
-                            company.save();
-                            // console.log("Company updated and saved\n" + company);
-                        } else {
-                            console.log("Employer.findById returned null company")
-                        }
-                    });
-
-                    // console.log("User after roles update:\n" + userFound);
-
-                    res.redirect('/roles');
-
-                } else {
-                    console.log("No user found");
-                }
-            });
+                Employer.findById(newRole.company, (err, company) => {
+                    if(err) console.log("Error finding employer:\n "+err);
+                    if(company) {
             
+                        // console.log("newRole._id: \n"+ newRole._id);
+                        // console.log("company.roles before push\n"+ company.roles);
+                        company.roles.push(newRole._id);
+                        // console.log("company.roles after push\n"+ company.roles);
+                        company.save();
+                        // console.log("Company updated and saved\n" + company);
+                    } else {
+                        console.log("Employer.findById returned null company")
+                    }
+                });
 
-        } else {
-            res.redirect('/');
-        }
+                // console.log("User after roles update:\n" + userFound);
+
+                res.redirect('/company/roles');
+
+            } else {
+                console.log("No user found");
+            }
+        });
+            
     });
     
     
 });
 
-app.get("/roles/:id", authCheckMiddleware, (req, res) => {
+app.get("/company/roles/:id", authCheckMiddleware, (req, res) => {
 
     Role.findOne({ _id: req.params.id }, (err, role) => {
         if(err) console.log(err);
@@ -309,7 +304,7 @@ app.get("/roles/:id", authCheckMiddleware, (req, res) => {
     
 });
 
-app.get("/roles/:id/edit", authCheckMiddleware, (req, res) => {
+app.get("/company/roles/:id/edit", authCheckMiddleware, (req, res) => {
     Role.findById(req.params.id, (err, role) => {
         if (err) console.log(err);
     }).
@@ -320,7 +315,7 @@ app.get("/roles/:id/edit", authCheckMiddleware, (req, res) => {
     });
     
 });
-app.put("/roles/:id/edit", authCheckMiddleware, (req, res) => {
+app.put("/company/roles/:id/edit", authCheckMiddleware, (req, res) => {
     Role.findOneAndUpdate({ _id: req.params.id }, {
         roleTitle: req.body.roleTitle,
         majorTradeArea: req.body.majorTradeArea,
@@ -336,23 +331,23 @@ app.put("/roles/:id/edit", authCheckMiddleware, (req, res) => {
         if (err) console.log(err);
         else{
             role.save();
-            res.redirect('/roles/'+req.params.id);
+            res.redirect('/company/roles/'+req.params.id);
             return;
         }
     });
 });
 
-app.delete("/roles/:id", authCheckMiddleware, (req, res) => {
+app.delete("/company/roles/:id", authCheckMiddleware, (req, res) => {
     Role.findOneAndRemove({ _id: req.params.id }, (err, role) => {
         if(err) console.log(err)
         else {
-            res.redirect('/roles');
+            res.redirect('/company/roles');
             // Go to edit role route and add a delete button that leads to this route.
         }
     });
 });
 
-app.get('/employer/:id', authCheckMiddleware, (req, res) => {
+app.get('/company/employer/:id', authCheckMiddleware, (req, res) => {
     Employer.findById(req.params.id, (err, empFound) => {
         if(err) console.log(err);
         else {
@@ -362,7 +357,7 @@ app.get('/employer/:id', authCheckMiddleware, (req, res) => {
     });
 });
 
-app.get('/employer/:id/edit', authCheckMiddleware, (req, res) => {
+app.get('/company/employer/:id/edit', authCheckMiddleware, (req, res) => {
     Employer.findById(req.params.id, (err, employerFound) => {
         if(err) console.log(err);
         else {
@@ -372,7 +367,7 @@ app.get('/employer/:id/edit', authCheckMiddleware, (req, res) => {
     });
 });
 
-app.put('/employer/:id/edit', authCheckMiddleware, (req, res) => {
+app.put('/company/employer/:id/edit', authCheckMiddleware, (req, res) => {
     
     Employer.findOneAndUpdate({ _id: req.params.id }, {
         company: req.body.company,
@@ -386,7 +381,7 @@ app.put('/employer/:id/edit', authCheckMiddleware, (req, res) => {
         if(err) console.log(err);
         else{
             employer.save();
-            res.redirect('/employer/'+req.params.id);
+            res.redirect('/company/employer/'+req.params.id);
             return;
         }
     });

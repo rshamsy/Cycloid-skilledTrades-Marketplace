@@ -19,7 +19,7 @@
                 <div class="collapse navbar-collapse" id="navbarSupportedContent">
                     <ul class="navbar-nav mr-auto">
                         <li class="nav-item active">
-                            <a class="nav-link" href="/roles"> Roles Home <span class="sr-only">(current)</span></a>
+                            <a class="nav-link" href="/company/roles"> Roles Home <span class="sr-only">(current)</span></a>
                         </li>
                         <% if(userLoggedIn){ %>
                             <li class="nav-item">
@@ -57,7 +57,7 @@
                                 This information will be automatically populated for each role 
                             </small>
                         </p>
-                        <a class="btn btn-primary btn-sm" href=<%="/employer/"+company._id%> role="button">
+                        <a class="btn btn-primary btn-sm" href=<%="/company/employer/"+company._id%> role="button">
                             View/Edit Employer Information
                         </a>
 
@@ -92,7 +92,7 @@
                                 Trade: <%=role.tradeName%> 
                             </p>
                         </div>
-                        <a class="btn btn-primary btn-sm" role='button' href=<%="/roles/"+role._id%>>View Role</a>
+                        <a class="btn btn-primary btn-sm" role='button' href=<%="/company/roles/"+role._id%>>View Role</a>
                     </div>
                 </div>
                 <%})%>
@@ -101,7 +101,7 @@
         </div>
 
         <div class="container" id="introJumbotron" style="text-align: center">
-            <a class="btn btn-primary btn-lg" role='button' href="/roles/new">Create New Role</a>
+            <a class="btn btn-primary btn-lg" role='button' href="/company/roles/new">Create New Role</a>
         </div>
 
     <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
