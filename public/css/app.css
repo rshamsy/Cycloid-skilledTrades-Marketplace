@@ -28,3 +28,15 @@ body {
     font-weight: 600;
     font-size: 1.5rem;
 }
+
+#select-user {
+  text-align: center;
+}
+
+#company-auth {
+  display: none;
+}
+
+#trainer-auth {
+  display: none;
+}

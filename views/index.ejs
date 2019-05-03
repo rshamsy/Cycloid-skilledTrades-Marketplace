@@ -49,7 +49,15 @@
                 <a class="btn btn-primary btn-lg" href="#" role="button">Learn more</a>
             </div>
 
-            <div class="container">
+            <div class="container" id="select-user">
+                <h3>Select below to continue to registration</h3>
+                <div class="btn-group" role="group" aria-label="Basic example">
+                    <button type="button" class="btn btn-outline-secondary" id="companySelectButton">Register as Skilled Trades Employer</button>
+                    <button type="button" class="btn btn-outline-secondary" id="trainerSelectButton">Register as Skilled Trades Training Inst</button>
+                </div>
+            </div>
+
+            <div class="container" id="company-auth">
                 <div class="row">
                     <div class="col-lg-6">
                             <h3>Register</h3>
@@ -101,8 +109,61 @@
                 </div>
             </div>
 
+            <div class="container" id="trainer-auth">
+                <div class="row">
+                    <div class="col-lg-6">
+                            <h3>Register</h3>
+                            <form action="/trainer/register" method='POST' >
+                                <div class="form-group">
+                                    <label for="firstName">First Name</label>
+                                    <input type="text" class="form-control" name="firstName" id="firstName" placeholder="Enter your first name">
+                                </div>
+                                <div class="form-group">
+                                    <label for="lastName">Last Name</label>
+                                    <input type="text" class="form-control" name="lastName" id="lastName" placeholder="Enter your last name">
+                                </div>
+                                
+                                <div class="form-group">
+                                    <label for="coName">Training Institution Name</label>
+                                    <input type="text" class="form-control" name="coName" id="coName" placeholder="Enter the company name">
+                                </div>
+            
+                                <div class="form-group">
+                                    <label for="email">Email Address</label>
+                                    <input type="email" class="form-control" name="email" id="email" aria-describedby="emailHelp" placeholder="Enter email address">
+                                    <small id="emailHelp" class="form-text text-muted">We'll never share your email with anyone else.</small>
+                                </div>
+            
+                                <div class="form-group">
+                                    <label for="pw">Password</label>
+                                    <input type="password" class="form-control" id="pw" name="pw" placeholder="Password">
+                                </div>
+                                
+                                <input type="submit" class="btn btn-primary" value="Submit">
+                            </form>
+                    </div>
+                    <div class="col-lg-6">
+                            <h3>Sign In</h3>
+                            <form action="/trainer/login", method="POST">
+                                <div class="form-group">
+                                    <label for="emailInput">Email Address</label>
+                                    <input type="email" class="form-control" name="emailInput" id="emailInput" aria-describedby="emailHelp" placeholder="Enter email">
+                                    <small id="emailHelp" class="form-text text-muted">We'll never share your email with anyone else.</small>
+                                </div>
+                                <div class="form-group">
+                                    <label for="pwInput">Password</label>
+                                    <input type="password" class="form-control" id="pwInput" name="pwInput" placeholder="Password">
+                                </div>
+            
+                                <button type="submit" class="btn btn-primary">Submit</button>
+                            </form>
+                    </div>
+                </div>
+            </div>
+
         <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
         <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
-        </body>
+        <script src="js/index.js"></script>    
+    </body>
     </html>
