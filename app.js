@@ -89,6 +89,24 @@ function authCheckMiddleware (req, res, next) {
     });
 };
 
+/*
+Following middleware to be used to pass a res.locals variables that can be used to place 
+logout/login buttons in navbar that depend on sign-in requirement
+*/
+app.use((req, res, next) => {
+    firebase.auth().onAuthStateChanged(user => {
+        if (user) {
+            res.locals.userLoggedIn = true;
+            next();
+        } else {
+            res.locals.userLoggedIn = false;
+            console.log("In middleware for creating res.locals userLoggedIn attribute");
+            next();
+        };
+    });
+    
+});
+
 app.get('/', (req, res) => {
     res.render('index');
 });
@@ -157,11 +175,18 @@ app.post('/login', (req, res) => {
         console.log("Successful firebase login");
         // res.send(user);
         res.redirect('/roles');
+        return;
     })
     .catch((error) => {
         console.log("Error Code: \n" + error.code + "\nError Message: \n" + error.message);
     });
 
+});
+
+app.get('/logout', (req, res) => {
+    firebase.auth().signOut().then(() => {
+        res.redirect('/');
+    });
 });
 
 app.get('/roles', authCheckMiddleware, (req, res) => {
@@ -189,6 +214,9 @@ app.get('/roles', authCheckMiddleware, (req, res) => {
             } else {
                 console.log("userDoc is null");
             }
+        })
+        .catch( err => {
+            console.log(err);
         });
     });
 
@@ -268,7 +296,7 @@ app.post('/roles/new', (req, res) => {
 
 app.get("/roles/:id", authCheckMiddleware, (req, res) => {
 
-    Role.findById(req.params.id, (err, role) => {
+    Role.findOne({ _id: req.params.id }, (err, role) => {
         if(err) console.log(err);
     }).
     populate("company").
