@@ -79,7 +79,7 @@ const trainerUserSchema = new mongoose.Schema({
     institution: {type: mongoose.Schema.Types.ObjectId, ref: 'Institution'},
     uid: String
 });
-let TrainerUser = mongoose.Model('trainerUser', trainerUserSchema);
+let TrainerUser = mongoose.model('trainerUser', trainerUserSchema);
 
 const institutionSchema = mongoose.Schema({
     institutionName: String,
@@ -89,7 +89,7 @@ const institutionSchema = mongoose.Schema({
     savedRoles: [{type: mongoose.Schema.ObjectId, ref: "Role"}]
     //savedRoles represents roleIds of roles saved by trainerUser - references same db doc created by employerUser. 
 });
-let Institution = mongoose.Model('Institution', institutionSchema);
+let Institution = mongoose.model('Institution', institutionSchema);
 
 function authCheckMiddleware (req, res, next) {
     firebase.auth().onAuthStateChanged(user => {
@@ -413,33 +413,64 @@ Create new model/schema for trainer, rather than employer.
 
 // res.send(req.body);
 
-firebase.auth().createUserWithEmailAndPassword(req.body.email, req.body.pw)
-.then(user => {
-    let newTrainerUser = new TrainerUser({
-        firstname: req.body.firstName,
-        lastname: req.body.lastName,
-        uid: user.user.uid
+    firebase.auth().createUserWithEmailAndPassword(req.body.email, req.body.pw)
+    .then(user => {
+        let newTrainerUser = new TrainerUser({
+            firstname: req.body.firstName,
+            lastname: req.body.lastName,
+            uid: user.user.uid
+        });
+
+        Institution.findOne({ institutionName: req.body.instName }, (err, instDoc) => {
+            if(err) console.log("Error encountered looking for Insitution");
+
+            if(instDoc){
+                instDoc.users.push(newTrainerUser._id);
+                newTrainerUser.institution = instDoc._id;
+               
+                instDoc.save();
+                newTrainerUser.save();
+            } else {
+                let newInstitution = new Institution({
+                    institutionName: req.body.instName,
+                    users: [newTrainerUser._id]
+                });
+                newTrainerUser.institution = newInstitution._id;
+                newInstitution.save();
+                newTrainerUser.save();
+            };
+            console.log('successfully created and saved new user');
+        });
+        res.redirect('/');
+        return;
+    })
+    .catch(err => {
+        console.log('Error creating new training user in firebase, or new inst or traineruser in mongo\n', err);
     });
-
-    Institution.findOne({ institutionName: instName }, (err, instDoc) => {
-        if(err) console.log("Error encountered looking for Insitution");
-
-        if(instDoc){
-
-        } else {
-
-        }
-    });
-});
+    
 
 });
 
 app.post('/trainer/login', (req, res) => {
-
+    firebase.auth().signInWithEmailAndPassword(req.body.emailInput, req.body.pwInput)
+    .then((user)=>{
+        console.log("Successful firebase login");
+        // res.send(user);
+        res.redirect('/trainer/roles');
+        return;
+    })
+    .catch((error) => {
+        console.log("Error Code: \n" + error.code + "\nError Message: \n" + error.message);
+    });
 });
 
 app.get('/trainer/roles', (req, res) => {
-
+    // res.send('loggedin');
+    var searchQuery = " ";
+    // var searchQuery = req.query.searchQuery;
+    Role.find((results) => {
+        res.send(results);
+    })
 });
 
 const port = process.env.PORT || 3000;
