@@ -34,7 +34,11 @@ app.use(methodOverride("_method"));
 
 const urlDB = "mongodb://localhost:27017/cycloid-app";
 // const urlDB = "mongodb://rshamsy:cycloidapp1@ds239936.mlab.com:39936/cycloid-app"
-mongoose.connect(urlDB, {useNewUrlParser: true, useFindAndModify: false});
+mongoose.connect(urlDB, {
+    useNewUrlParser: true, 
+    useFindAndModify: false,
+    useCreateIndex: true
+});
 
 const userSchema = new mongoose.Schema({
     firstname: String,
@@ -71,6 +75,8 @@ const roleSchema = new mongoose.Schema({
     trainingProvided: String,
     fulltimePay: String
 });
+//.index to pass what fields to text-search by (ie what index)
+roleSchema.index({'$**': 'text'});
 let Role = mongoose.model('Role', roleSchema);
 
 const trainerUserSchema = new mongoose.Schema({
@@ -308,6 +314,11 @@ app.post('/company/roles/new', (req, res) => {
 });
 
 app.get("/company/roles/:id", authCheckMiddleware, (req, res) => {
+    /**
+     * TO-DO: 
+     * First authenticate whether user signed in owns the role, and then they can only see edit button.
+     */
+
 
     Role.findOne({ _id: req.params.id }, (err, role) => {
         if(err) console.log(err);
@@ -323,6 +334,12 @@ app.get("/company/roles/:id", authCheckMiddleware, (req, res) => {
 });
 
 app.get("/company/roles/:id/edit", authCheckMiddleware, (req, res) => {
+    
+    /**
+     * TO-DO: 
+     * First authenticate whether user signed in owns the role, and then they can only see edit button.
+     */
+    
     Role.findById(req.params.id, (err, role) => {
         if (err) console.log(err);
     }).
@@ -334,6 +351,13 @@ app.get("/company/roles/:id/edit", authCheckMiddleware, (req, res) => {
     
 });
 app.put("/company/roles/:id/edit", authCheckMiddleware, (req, res) => {
+
+    /**
+     * TO-DO: 
+     * First authenticate whether user signed in owns the role, and then they can only see edit button.
+     */
+
+
     Role.findOneAndUpdate({ _id: req.params.id }, {
         roleTitle: req.body.roleTitle,
         majorTradeArea: req.body.majorTradeArea,
@@ -356,6 +380,12 @@ app.put("/company/roles/:id/edit", authCheckMiddleware, (req, res) => {
 });
 
 app.delete("/company/roles/:id", authCheckMiddleware, (req, res) => {
+
+    /**
+     * TO-DO: 
+     * First authenticate whether user signed in owns the role, and then they can only see edit button.
+     */
+
     Role.findOneAndRemove({ _id: req.params.id }, (err, role) => {
         if(err) console.log(err)
         else {
@@ -376,6 +406,12 @@ app.get('/company/employer/:id', authCheckMiddleware, (req, res) => {
 });
 
 app.get('/company/employer/:id/edit', authCheckMiddleware, (req, res) => {
+
+    /**
+     * TO-DO: 
+     * First authenticate whether user signed in belongs to company, and then they can only see edit button.
+     */
+
     Employer.findById(req.params.id, (err, employerFound) => {
         if(err) console.log(err);
         else {
@@ -464,14 +500,50 @@ app.post('/trainer/login', (req, res) => {
     });
 });
 
+
 app.get('/trainer/roles', (req, res) => {
-    // res.send('loggedin');
-    var searchQuery = " ";
-    // var searchQuery = req.query.searchQuery;
-    Role.find((results) => {
-        res.send(results);
+        
+    
+    Role.find({}, (err, userFound) => {
+        if (err) console.log("Error finding roles: " + err);
     })
+    .populate({
+        path: 'company',
+        model: 'Employer'
+    })
+    .exec((err, roleDocs) => {
+        if (err) console.log("Error deep populating: " + err);
+        if(roleDocs) {
+            // res.send(roleDocs);
+            res.render('trainer-home', {roles: roleDocs})
+
+        } else {
+            console.log("roleDoc is null");
+        }
+        })
+
+
 });
+
+app.post('/trainer/roles/:id/save', (req, res) => {
+    let roleId = req.param.id;
+    // console.log(role.Id);
+    console.log("In post");
+});
+// app.get('/trainer/roles', (req, res) => {
+//     // res.send('loggedin');
+//     var searchQuery = "te";
+//     // var searchQuery = req.query.searchQuery;
+//     Role.find({
+//         $text: {$search: new RegExp(searchQuery)}
+//     })
+//     .then(searchResults => {
+//         res.send(searchResults);
+//     })
+//     .catch(err => {
+//         console.log(err);
+//     })
+// });
 
 const port = process.env.PORT || 3000;
 app.listen(port, () => {
