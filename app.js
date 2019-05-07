@@ -530,6 +530,21 @@ app.post('/trainer/roles/:id/save', (req, res) => {
     // console.log(role.Id);
     console.log("In post");
 });
+
+app.get('/trainer/roles/:id', (req, res) => {
+    
+    Role.findOne({ _id: req.params.id }, (err, role) => {
+        if(err) console.log(err);
+    }).
+    populate("company").
+    exec((err, role) => {
+        if (err) res.send(err);
+        // res.send(role);
+        res.render('trainer-role', {role: role});
+    });
+});
+
+
 // app.get('/trainer/roles', (req, res) => {
 //     // res.send('loggedin');
 //     var searchQuery = "te";

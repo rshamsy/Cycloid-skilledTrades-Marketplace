@@ -54,12 +54,15 @@
                                     Trade Category: <%=role.majorTradeArea%>
                                 </p>
                                 <p class="card-text">
+                                    Location: <%=role.location%>
+                                </p>
+                                <p class="card-text">
                                     Trade: <%=role.tradeName%> 
                                 </p>
                             </div>
                             
-                            <a class="btn btn-primary btn-sm" role='button' href=<%="/company/roles/"+role._id%>>View Role</a>
-                            <button class="btn btn-primary btn-sm saveRoleButton" role='button' data-id="someVal" id="someIdName">Save</button>
+                            <a class="btn btn-primary btn-sm" role='button' href=<%="/trainer/roles/"+role._id%>>View Role</a>
+                            <!-- <button class="btn btn-primary btn-sm saveRoleButton" role='button' data-id="someVal" id="someIdName">Save</button> -->
                         </div>
                     </div>
                 <%})%>
