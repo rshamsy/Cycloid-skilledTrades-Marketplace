@@ -233,15 +233,13 @@ app.get('/company/roles', authCheckMiddleware, (req, res) => {
             if (err) console.log("Error deep populating: " + err);
             if(userDoc) {
                 // res.send(userDoc);
-                res.render('home', {company: userDoc.company})
-
+                res.render('home', {company: userDoc.company});
+                return;
             } else {
                 console.log("userDoc is null");
             }
         })
-        .catch( err => {
-            console.log(err);
-        });
+
     });
 
     

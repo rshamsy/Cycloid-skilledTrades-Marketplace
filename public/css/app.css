@@ -40,3 +40,11 @@ body {
 #trainer-auth {
   display: none;
 }
+
+div {
+  margin: 5px 0;
+}
+
+.firstDiv {
+  margin-top: 80px; 
+}
