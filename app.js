@@ -499,7 +499,7 @@ app.post('/trainer/login', (req, res) => {
 });
 
 
-app.get('/trainer/roles', (req, res) => {
+app.get('/trainer/roles', authCheckMiddleware, (req, res) => {
         
     
     Role.find({}, (err, userFound) => {
@@ -523,13 +523,7 @@ app.get('/trainer/roles', (req, res) => {
 
 });
 
-app.post('/trainer/roles/:id/save', (req, res) => {
-    let roleId = req.param.id;
-    // console.log(role.Id);
-    console.log("In post");
-});
-
-app.get('/trainer/roles/:id', (req, res) => {
+app.get('/trainer/roles/:id', authCheckMiddleware, (req, res) => {
     
     Role.findOne({ _id: req.params.id }, (err, role) => {
         if(err) console.log(err);
@@ -541,6 +535,14 @@ app.get('/trainer/roles/:id', (req, res) => {
         res.render('trainer-role', {role: role});
     });
 });
+
+app.post('/trainer/roles/:id/save', authCheckMiddleware, (req, res) => {
+    let roleId = req.param.id;
+    // console.log(role.Id);
+    console.log("In post");
+});
+
+
 
 
 // app.get('/trainer/roles', (req, res) => {
