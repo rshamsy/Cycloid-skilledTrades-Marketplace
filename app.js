@@ -2,10 +2,7 @@ const express = require('express'),
     bodyParser = require('body-parser'),
     mongoose = require('mongoose'),
     firebase = require('firebase'),
-    // admin = require('firebase-admin'),
-    // serviceAccount = require('../cycloid-25cab-firebase-adminsdk-vrj16-47ca9a49d0.json'),
     methodOverride = require('method-override');
-    // firebaseui = require('firebaseui');
     
 const app = express();
 
@@ -18,12 +15,6 @@ let firebaseConfig = {
     messagingSenderId: "820408586358"
 };
 firebase.initializeApp(firebaseConfig);
-
-// admin.initializeApp({
-//     credential: admin.credential.cert(serviceAccount),
-//     databaseURL: "https://cycloid-25cab.firebaseio.com"
-// });
-
 
 
 app.set('view engine', 'ejs');
