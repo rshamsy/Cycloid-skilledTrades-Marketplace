@@ -2,8 +2,8 @@ const express = require('express'),
     bodyParser = require('body-parser'),
     mongoose = require('mongoose'),
     firebase = require('firebase'),
-    admin = require('firebase-admin'),
-    serviceAccount = require('../cycloid-25cab-firebase-adminsdk-vrj16-47ca9a49d0.json'),
+    // admin = require('firebase-admin'),
+    // serviceAccount = require('../cycloid-25cab-firebase-adminsdk-vrj16-47ca9a49d0.json'),
     methodOverride = require('method-override');
     // firebaseui = require('firebaseui');
     
@@ -19,10 +19,10 @@ let firebaseConfig = {
 };
 firebase.initializeApp(firebaseConfig);
 
-admin.initializeApp({
-    credential: admin.credential.cert(serviceAccount),
-    databaseURL: "https://cycloid-25cab.firebaseio.com"
-});
+// admin.initializeApp({
+//     credential: admin.credential.cert(serviceAccount),
+//     databaseURL: "https://cycloid-25cab.firebaseio.com"
+// });
 
 
 
@@ -33,7 +33,7 @@ app.use(express.static('public'));
 app.use(methodOverride("_method"));
 
 // const urlDB = "mongodb://localhost:27017/cycloid-app";
-const urlDB = "mongodb://rshamsy:cycloidapp1@ds239936.mlab.com:39936/cycloid-app"
+const urlDB = process.env.DATABASEURL;
 mongoose.connect(urlDB, {
     useNewUrlParser: true, 
     useFindAndModify: false,
