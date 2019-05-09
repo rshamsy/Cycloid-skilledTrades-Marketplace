@@ -32,8 +32,8 @@ app.use(bodyParser.urlencoded({extended:true}));
 app.use(express.static('public'));
 app.use(methodOverride("_method"));
 
-const urlDB = "mongodb://localhost:27017/cycloid-app";
-// const urlDB = "mongodb://rshamsy:cycloidapp1@ds239936.mlab.com:39936/cycloid-app"
+// const urlDB = "mongodb://localhost:27017/cycloid-app";
+const urlDB = "mongodb://rshamsy:cycloidapp1@ds239936.mlab.com:39936/cycloid-app"
 mongoose.connect(urlDB, {
     useNewUrlParser: true, 
     useFindAndModify: false,
@@ -99,16 +99,16 @@ let Institution = mongoose.model('Institution', institutionSchema);
 
 function authCheckMiddleware (req, res, next) {
     firebase.auth().onAuthStateChanged(user => {
-        if(user) {
-            next();
-        } else {
+        if(!user) {
             console.log("In middleware - user logged out.");
             
             // Have flash message here to indicate sign in required
 
             res.redirect('/');
             return;
-            // res.render('index');
+            // res.render('index'); 
+        } else {
+            next();
         }
     });
 };
@@ -121,11 +121,11 @@ app.use((req, res, next) => {
     firebase.auth().onAuthStateChanged(user => {
         if (user) {
             res.locals.userLoggedIn = true;
-            next();
+            return next();
         } else {
             res.locals.userLoggedIn = false;
             console.log("In middleware for creating res.locals userLoggedIn attribute");
-            next();
+            return next();
         };
     });
     
@@ -133,6 +133,7 @@ app.use((req, res, next) => {
 
 app.get('/', (req, res) => {
     res.render('index');
+    return;
 });
 
 
@@ -179,13 +180,15 @@ app.post('/company/register', (req, res) => {
                 console.log('employer created and saved: \n'+ createdEmployer);
                 console.log('user created and saved: \n'+createdUser);
             }
-            res.redirect('/');
         });
+        res.redirect('/');
+        return;
     })
     .catch(error => {
         console.log('Error creating new user in firebase, or new employer or new user in mongodb:', error);
         if (error.code === 'auth/email-already-in-use'){
             res.send("Already registered with this email - please log in with that email, or create new account with another email");
+            return;
         };
     });
 
@@ -203,6 +206,8 @@ app.post('/company/login', (req, res) => {
     })
     .catch((error) => {
         console.log("Error Code: \n" + error.code + "\nError Message: \n" + error.message);
+        res.send(error.message);
+        return;
     });
 
 });
@@ -210,6 +215,7 @@ app.post('/company/login', (req, res) => {
 app.get('/logout', (req, res) => {
     firebase.auth().signOut().then(() => {
         res.redirect('/');
+        return;
     });
 });
 
@@ -232,9 +238,16 @@ app.get('/company/roles', authCheckMiddleware, (req, res) => {
         .exec((err, userDoc) => {
             if (err) console.log("Error deep populating: " + err);
             if(userDoc) {
-                // res.send(userDoc);
-                res.render('home', {company: userDoc.company});
-                return;
+                try {
+                    // res.send(userDoc);
+                    res.render('home', {company: userDoc.company});
+                    return;
+                }
+                catch (err) {
+                    console.log("res.render issue:\n" + err);
+
+                }
+                
             } else {
                 console.log("userDoc is null");
             }
@@ -300,6 +313,7 @@ app.post('/company/roles/new', (req, res) => {
                 // console.log("User after roles update:\n" + userFound);
 
                 res.redirect('/company/roles');
+                return;
 
             } else {
                 console.log("No user found");
@@ -323,9 +337,16 @@ app.get("/company/roles/:id", authCheckMiddleware, (req, res) => {
     }).
     populate("company").
     exec((err, role) => {
-        if (err) res.send(err);
-        // res.send(role);
-        res.render('role', {role: role});
+        if (err) {
+            res.send(err);
+            return;
+        }
+        else {
+            // res.send(role);
+            res.render('role', {role: role});
+            return;
+        }
+        
     });
 
     
@@ -345,6 +366,7 @@ app.get("/company/roles/:id/edit", authCheckMiddleware, (req, res) => {
     exec((err, role) => {
         if(err) console.log(err);
         res.render('edit-role', {role: role});
+        return;
     });
     
 });
@@ -388,6 +410,7 @@ app.delete("/company/roles/:id", authCheckMiddleware, (req, res) => {
         if(err) console.log(err)
         else {
             res.redirect('/company/roles');
+            return;
             // Go to edit role route and add a delete button that leads to this route.
         }
     });
@@ -513,7 +536,8 @@ app.get('/trainer/roles', authCheckMiddleware, (req, res) => {
         if (err) console.log("Error deep populating: " + err);
         if(roleDocs) {
             // res.send(roleDocs);
-            res.render('trainer-home', {roles: roleDocs})
+            res.render('trainer-home', {roles: roleDocs});
+            return;
 
         } else {
             console.log("roleDoc is null");
@@ -533,6 +557,7 @@ app.get('/trainer/roles/:id', authCheckMiddleware, (req, res) => {
         if (err) res.send(err);
         // res.send(role);
         res.render('trainer-role', {role: role});
+        return;
     });
 });
 
